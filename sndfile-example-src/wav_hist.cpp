@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 	WAVHist hist { sndFile };
 	while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
 		samples.resize(nFrames * sndFile.channels());
-		hist.update(samples);
+		hist.updateCoar(samples);
 	}
 
 	hist.dump(channel);
