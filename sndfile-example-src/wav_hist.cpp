@@ -14,22 +14,26 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	//Check input file
 	SndfileHandle sndFile { argv[argc-2] };
 	if(sndFile.error()) {
 		cerr << "Error: invalid input file\n";
 		return 1;
     }
 
+	//Check input file typemask format
 	if((sndFile.format() & SF_FORMAT_TYPEMASK) != SF_FORMAT_WAV) {
 		cerr << "Error: file is not in WAV format\n";
 		return 1;
 	}
 
+	//Check input file submask format
 	if((sndFile.format() & SF_FORMAT_SUBMASK) != SF_FORMAT_PCM_16) {
 		cerr << "Error: file is not in PCM_16 format\n";
 		return 1;
 	}
 
+	//Check input channel 
 	int channel { stoi(argv[argc-1]) };
 	if(channel >= sndFile.channels()) {
 		cerr << "Error: invalid channel requested\n";
@@ -45,6 +49,16 @@ int main(int argc, char *argv[]) {
 	}
 
 	hist.dump(channel);
+	
+	// WAVHist med { sndFile };
+	// //for(int i = 1; i < sndFile.channels()+1; i++){
+	// 	//cerr << i  << "\n";
+	// 	while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
+	// 	samples.resize(nFrames * sndFile.channels());
+	// 	hist.update(samples);
+	// }
+		
+	//}
 	return 0;
 }
 
