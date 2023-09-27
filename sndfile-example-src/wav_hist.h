@@ -5,188 +5,83 @@
 #include <vector>
 #include <map>
 #include <sndfile.hh>
+#include <fstream>
 
 class WAVHist {
   private:
 	std::vector<std::map<short, size_t>> counts;
-	//std::vector<std::map<short, size_t>> coars;
-	std::map<int, size_t> med;
-	std::map<int, size_t> dif;
+	std::vector<std::map<short, size_t>> bins;
+	std::map<short, size_t> average;
+	std::map<short, size_t> difference;
+	int binSize = 64;
 
-	//std::vector<float> med;
-	//std::vector<short> samples;
   public:
 	WAVHist(const SndfileHandle& sfh) {
 		counts.resize(sfh.channels());
+		bins.resize(sfh.channels());
 	}
 
 	void update(const std::vector<short>& samples) {
 		size_t n { };
-		//int inicio=med.size();
-		//med.resize(samples.size());
-		int i=0;
-		int soma=0;
-		int minus=0;
-		//int conta=inicio;
-		for(auto s : samples){
-			//std::cout << n++ % counts.size() << '\n';
-			counts[n++ % counts.size()][s]++;
-			//MEDIA
-			//lado esquerdo
-			if(i==0){
-				soma = s;
-				minus = s;
-				i++;
-			}
-			else{
-				//lado direito
-				//std::cout << "Média de " << soma << " e de " << s << '\n';
-				//std::cout << "Diferença de " << minus << " e de " << s << '\n';
-				soma +=s;
-				minus -= s;
-				i=0;
-				int media=soma/2;
-				int difference = minus/2;
-				//std::cout << "Méd: " << media << '\n';
-				//std::cout << "Dif: " << difference << '\n';
-				med[media]++;
-				dif[difference]++;
-				soma=0;
-				minus=0;
-				//std::cout << "Guardar: " <<med[media] <<  '\n';
-				
-			}
-		}
-		/*
-		for(auto s : samples)
-			std::cout << s << '\n';
-		*/
-		/*
-		for(int i=0; i<counts.size();i++)
-			med.push_back(counts[i]);
-		*/
-	}
 
-	void updateCoar(const std::vector<short>& samples) {
-		size_t n { };
-		//int inicio=med.size();
-		//med.resize(samples.size());
-		int i=0;
-		int soma=0;
-		int minus=0;
-		int size=2;
-		int point = 1;
-		short prev;
-		int number = 1;
-		//int conta=inicio;
-		for(auto s : samples){
-			//std::cout << "N: " << number << '\n';
-			//number++;
-			
-			//std::cout << n++ % counts.size() << '\n';
+		for(auto s : samples) {
 			counts[n++ % counts.size()][s]++;
-			//prev=s;
-			//std::cout << "Save: " << prev << '\n';
-			//std::cout << "Pointer: " << point << '\n'; 
-			point++;
-			//MEDIA
-			//lado esquerdo
-			if(i==0){
-				soma = s;
-				minus = s;
-				i++;
-			}
-			else{
-				//lado direito
-				//std::cout << "Média de " << soma << " e de " << s << '\n';
-				//std::cout << "Diferença de " << minus << " e de " << s << '\n';
-				soma +=s;
-				minus -= s;
-				i=0;
-				int media=soma/2;
-				int difference = minus/2;
-				//std::cout << "Méd: " << media << '\n';
-				//std::cout << "Dif: " << difference << '\n';
-				med[media]++;
-				dif[difference]++;
-				soma=0;
-				minus=0;
-				//std::cout << "Guardar: " <<med[media] <<  '\n';
-				
-			}
-			/*
-			for(auto s : samples)
-				std::cout << s << '\n';
-			*/
-			/*
-			for(int i=0; i<counts.size();i++)
-				med.push_back(counts[i]);
-			*/
-			/*
-				//std::cout << "Prev: " << prev << '\n';
-				//std::cout << "Pointer: " << point << '\n'; 
-				if(point >= size){
-					point = 0;
-				}
-
-				point++;
-				//counts[n++ % counts.size()][s]++;
-				counts[n++ % counts.size()][prev]++;
-			*/
-			
-		}
-		short ini = 0;
-		size_t counto = 0;
-		for(auto channel : counts){
-			for(auto [value, counter] : channel){
-				if(point == 1){
-					ini = value;
-					counto = counter;
-					point++;
-				}else{
-					counto += counter;
-					if(point == size){
-						point = 0;
-						std::cout << ini << '\t' << counto << '\n';
-					}
-					point++;
-				}
+			// Only makes sense to calculate MID and SIDE for stereo
+			// For every two samples (left and right) calculate mid and side
+			if (counts.size() == 2 && (n % 2) == 1)
+			{
+				average[(samples[n-1] + samples[n]) / 2]++; 	// average[(left+right)/2]
+				difference[(samples[n-1] - samples[n]) / 2]++;	// difference[(left-right)/2]
 			}
 		}
 	}
-	
+
+	void updateBins() {
+		for (uint i = 0; i < counts.size(); i++) {
+
+			int sum = 0;		// used to calculate average of values inside the considered bin
+			int total = 0;		// keep track of the counters of the values in the bin
+			int x = 0;			// iterate over bins
+
+			for(auto [value, counter] : counts[i]) {
+				sum += value;
+				total += counter;
+				x++;
+				if (x == binSize) {	// create new bin
+					bins[i][(sum / binSize)] = total;	// use average as index
+					sum = 0;
+					total = 0;
+					x = 0;
+				}
+			}
+			if (x % binSize != 0)	// handle last potential uncompleted bin
+				bins[i][(sum / binSize)] = total;
+		}
+	}
+
 	void dump(const size_t channel) const {
-		//std::cout << channel << '/n';
-		/*
+		std::ofstream count ("../histograms/count.txt");
 		for(auto [value, counter] : counts[channel])
-			std::cout << value << '\t' << counter << '\n';
-		*/
-		//std::cout << channel << '/n';
-		//std::cout << "Media: " << '\n';
-		/*
-		//Media
-		for(auto [value, counter] : med){
-			std::cout <<  value << '\t' << counter <<'\n';
-		}
-		//Diferenca
-		for(auto [value, counter] : dif){
-			std::cout <<  value << '\t' << counter <<'\n';
-		}
-		*/
-		
+			count << value << '\t' << counter << '\n';
 	}
-	
 
-	/*
-	void med(const size_t channels) const {
-		for(int i = 1; i < channels + 1; i++){
-			for(auto [value, counter] : counts[i]){
-				
-			}
-		}
+	void dumpMid() const {
+		std::ofstream mid ("../histograms/mid.txt");
+		for(auto [value, counter] : average)
+			mid << value << '\t' << counter << '\n';
 	}
-	*/
+
+	void dumpSide() const {
+		std::ofstream side ("../histograms/side.txt");
+		for(auto [value, counter] : difference)
+			side << value << '\t' << counter << '\n';
+	}
+
+	void dumpBins(const size_t channel) const {
+		std::ofstream bin ("../histograms/bin.txt");
+		for(auto [value, counter] : bins[channel])
+			bin << value << '\t' << counter << '\n';
+	}
 };
 
 #endif
-

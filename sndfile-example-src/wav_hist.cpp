@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	//Check input channel 
+	//Check input channel
 	int channel { stoi(argv[argc-1]) };
 	if(channel >= sndFile.channels()) {
 		cerr << "Error: invalid channel requested\n";
@@ -45,20 +45,12 @@ int main(int argc, char *argv[]) {
 	WAVHist hist { sndFile };
 	while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
 		samples.resize(nFrames * sndFile.channels());
-		hist.updateCoar(samples);
+		hist.update(samples);
 	}
-
+	hist.updateBins();
+	hist.dumpMid();
+	hist.dumpSide();
 	hist.dump(channel);
-	
-	// WAVHist med { sndFile };
-	// //for(int i = 1; i < sndFile.channels()+1; i++){
-	// 	//cerr << i  << "\n";
-	// 	while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
-	// 	samples.resize(nFrames * sndFile.channels());
-	// 	hist.update(samples);
-	// }
-		
-	//}
+	hist.dumpBins(channel);
 	return 0;
 }
-
