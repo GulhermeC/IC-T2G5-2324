@@ -9,6 +9,10 @@ constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 
 int main(int argc, char *argv[]) {
 
+	cerr << "Channel " << argc << '\n';
+	cerr << "Sample1 " << argv << '\n';
+	cerr << "Sample " << *argv << '\n';
+
 	if(argc < 3) {
 		cerr << "Usage: " << argv[0] << " <input file> <channel>\n";
 		return 1;
@@ -20,6 +24,8 @@ int main(int argc, char *argv[]) {
 		cerr << "Error: invalid input file\n";
 		return 1;
     }
+	cerr << "S " << sndFile << '\n';
+	cerr << SF_FORMAT_TYPEMASK << '\n';
 
 	//Check input file typemask format
 	if((sndFile.format() & SF_FORMAT_TYPEMASK) != SF_FORMAT_WAV) {
