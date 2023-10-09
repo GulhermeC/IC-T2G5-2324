@@ -25,3 +25,6 @@ target_link_libraries (wav_effects sndfile fftw3)
 
 add_executable (wav_quant wav_quant.cpp)
 target_link_libraries (wav_quant sndfile fftw3)
+
+add_executable (wav_cmp wav_cmp.cpp)
+target_link_libraries (wav_cmp sndfile)
