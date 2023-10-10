@@ -40,7 +40,8 @@ int main(int argc, char *argv[]) {
 	WAVQuant quant { };
 	while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
 		samples.resize(nFrames * sndFile.channels());
-		quant.quantBits(samples,8);
+		//quant.quantBits(samples,8);
+		quant.quantLevels(samples,64);
 	}
 	SndfileHandle sfhOut { "quantized.wav", SFM_WRITE, sndFile.format(),
 		sndFile.channels(), sndFile.samplerate() };
