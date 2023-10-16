@@ -17,8 +17,10 @@ class BitStream{
         string fOperation;
         int fSize;
         vector<int> bitArray;
+        vector<string> lines;
         int arrayPos;
         int bitPos;
+        int max = 0;
     
     public:
         BitStream(){}
@@ -28,6 +30,7 @@ class BitStream{
             fOperation = op;
             bitPos = 0;
             arrayPos = 0;
+            
 
             //Type of operation (r - read | w - write)
 
@@ -50,7 +53,7 @@ class BitStream{
             for(int i=0;i<bitArray.size();i++)
                 std::cout << bitArray[i] << std::endl;
         }
-        void ReadTxtFile(string fileName)
+        void ReadTxtFile(string fileName, int maxbit)
         {
             std::ifstream file(fileName);
             std::string line;
@@ -59,19 +62,31 @@ class BitStream{
             
             if(file.is_open()) {
                 while (getline(file, line)){
-                    std::cout << line << std::endl;
-                    for(int i=0;i<line.size();i++)
-                    {
-                        bitArray.push_back(line[i]-'0');
+                    if(max < maxbit){
+                        std::cout << line << std::endl;
+                        for(int i=0;i<line.size();i++)
+                        {
+                            if(max < maxbit){
+                                bitArray.push_back(line[i]-'0');
+                                max++;
+                            }else{
+                                break;
+                            }
+                            
+                        }
+                    }else{
+                        max = 0;
+                        break;
+                        
                     }
 
-
                 }
+                max = 0;
                 file.close();
             }
         }
 
-        void WriteTxTFile(string fileName)
+        void WriteTxTFile(string fileName, int maxbit)
         {
     
             //ficheiro de saida
@@ -94,24 +109,38 @@ class BitStream{
             fileOut.close();
         }
 
-        void ReadBinFile(string fileName)
+        void ReadBinFile(string fileName, int maxbit)
         {
             std::ifstream file(fileName,std::ios::binary);
             char byte;
             if(file.is_open()) 
             {
                 while(file.read(&byte,1)){
-                    //gravar no ficheiro de texto
-                    vector<int> bitsConvertidos=byteToBit(byte);
-                    for(int i=0;i<bitsConvertidos.size();i++)
-                        bitArray.push_back(bitsConvertidos[i]-'0');
+                    if (max < maxbit){
+                        //gravar no ficheiro de texto
+                        vector<int> bitsConvertidos=byteToBit(byte);
+                        for(int i=0;i<bitsConvertidos.size();i++){
+                            if(max < maxbit){
+                                max++;
+                                bitArray.push_back(bitsConvertidos[i]-'0');
+                            }else{
+                                break;
+                            }
+                            
+                        }
+                    }else{
+                        max = 0;
+                        
+                        break;
+                    }
                     
                 }
             }
+            max = 0;
             file.close();
         }
 
-        void WriteBinFile(string fileName)
+        void WriteBinFile(string fileName, int maxbit)
         {
 
             //ficheiro de saida
@@ -174,8 +203,38 @@ class BitStream{
     // write N bits (0 <= N <= 64)
 
     // read string
+        void readStringFile(string fileName){
+            std::ifstream inputFile(fileName);
+            if(!inputFile.is_open())
+            {
+                std::cerr << "Erro ao abrir o ficheiro" << fileName << std::endl;
+                return;
+            }
 
+            std::string line;
+            while(getline(inputFile, line))
+            {
+                lines.push_back(line);
+            }
+            inputFile.close();
+        }
     // write string
+        void writeStringFile(string fileName)
+        {
+            std::ofstream outputFile(fileName);
+            if(!outputFile.is_open())
+            {
+                std::cerr << "Erro ao criar ficheiro " << fileName << std::endl;
+                return; 
+            }
+
+            for (const string &line : lines)
+            {
+                outputFile << line << std::endl;
+            }
+
+            outputFile.close();
+        }
 
 // other classes
     

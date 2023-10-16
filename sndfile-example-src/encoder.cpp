@@ -17,24 +17,36 @@ main (int argc, char *argv[])
 {
     //input 
     if(argc < 4) {
-		cerr << "Usage: " << argv[0] << " <input file> <output file> <e|d>\n";
+		cerr << "Usage: " << argv[0] << " <input file> <output file> <e|d|wr> [maxbit]\n";
 		return 1;
 	}
 
+    int maxbit;
     string fileName = argv[1];
-    string fileNameOut=argv[2];
+    string fileNameOut = argv[2];
     fileMode = argv[3];
+    if(argc == 5){
+            string bits = argv[4];
+            maxbit = std::stoi(bits);
+    }else{
+        maxbit = 64;
+    }
+    
     BitStream bts=BitStream();
 
     if (fileMode=="e")
     {
-        bts.ReadTxtFile(fileName);
+        bts.ReadTxtFile(fileName, maxbit);
         bts.showBits();
-        bts.WriteBinFile(fileNameOut);
-    }else{
-        bts.ReadBinFile(fileName);
+        bts.WriteBinFile(fileNameOut, maxbit);
+    }else if(fileMode=="d"){
+        bts.ReadBinFile(fileName, maxbit);
+        bts.ReadBinFile(fileName, maxbit);
         bts.showBits();
-        bts.WriteTxTFile(fileNameOut);
+        bts.WriteTxTFile(fileNameOut, maxbit);
+    }else if(fileMode=="wr"){
+        bts.readStringFile(fileName);
+        bts.writeStringFile(fileNameOut);
     }
 
 }
