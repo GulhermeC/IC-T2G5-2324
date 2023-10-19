@@ -21,6 +21,7 @@ class BitStream{
         int arrayPos;
         int bitPos;
         int max = 0;
+        char buffer;
     
     public:
         BitStream(){}
@@ -187,20 +188,48 @@ class BitStream{
     //fout.open("sample.txt", ios::app);
 
     // read single bit
-        int readSingleBit() {
-            
+        int readBit() {
+            if (bitPos % 8 == 0) {
+                file.read(&buffer,1);
+                bitPos = 0;
+            }
+            return (buffer >> (7 - bitPos++)) & 1;
         }
 
     // write single bit
-    
-
-        void writeBit(int bit){
-            
+        void writeBit(int bit) {
+            if (bitPos == 8) {
+                file.write(&buffer,1);
+                bitPos = 0;
+                buffer = 0;
+            }
+            buffer = (buffer << 1) | (bit & 1);
+            bitPos++;
         }
 
     // read N bits (0 <= N <= 64)
+        std::vector<int> readBits(int numBits) {
+            if (numBits < 0 || numBits > 64) {
+                fprintf(stderr,"Given N (%d) must be in range [0-64]",numBits);
+                return std::vector<int>(0);
+            }
+            std::vector<int> res (numBits);
+            for(int i = 0; i < numBits; i++) {
+                res[i] = readBit();
+            }
+            return res;
+        }
 
     // write N bits (0 <= N <= 64)
+        void writeBits(vector<int> bits) {
+            size_t size = bits.size();
+            if (size < 0 || size > 64) {
+                fprintf(stderr,"Given N (%d) must be in range [0-64]",size);
+                return;
+            }
+            for (uint8_t bit : bits)
+                writeBit(bit);
+        }
 
     // read string
         void readStringFile(string fileName){
