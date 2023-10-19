@@ -39,8 +39,6 @@ class BitStream{
             {
                 file.open(fName, ios::in | ios::binary);
                 fSize = fileSize();
-                int bit = readSingleBit();
-                cout << "out bit:" << bit << "\n";
                 
             }else if(fOperation == "w"){
                 file.open(fName, ios::out | ios::trunc | ios::binary);
