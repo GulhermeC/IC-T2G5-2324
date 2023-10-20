@@ -49,7 +49,7 @@ class BitStream{
         }
         void showBits()
         {
-            for(int i=0;i<bitArray.size();i++)
+            for(unsigned long int i=0;i<bitArray.size();i++)
                 std::cout << bitArray[i] << std::endl;
         }
         void ReadTxtFile(string fileName, int maxbit)
@@ -62,8 +62,8 @@ class BitStream{
             if(file.is_open()) {
                 while (getline(file, line)){
                     if(max < maxbit){
-                        std::cout << line << std::endl;
-                        for(int i=0;i<line.size();i++)
+                       // std::cout << line << std::endl;
+                        for(unsigned long int i=0;i<line.size();i++)
                         {
                             if(max < maxbit){
                                 bitArray.push_back(line[i]-'0');
@@ -85,7 +85,7 @@ class BitStream{
             }
         }
 
-        void WriteTxTFile(string fileName, int maxbit)
+        void WriteTxTFile(string fileName)
         {
     
             //ficheiro de saida
@@ -95,10 +95,9 @@ class BitStream{
                 std::cerr << "Erro ao criar ficheiro texto" << std::endl;
                 return;
             }
-            char byte;
             if(fileOut.is_open()) 
             {
-                for(int i=0;i<bitArray.size();i++){
+                for(unsigned long int i=0;i<bitArray.size();i++){
                     fileOut << bitArray[i];
                     if ((i+1) % 8 ==0)
                         fileOut << std::endl;
@@ -115,13 +114,14 @@ class BitStream{
             if(file.is_open()) 
             {
                 while(file.read(&byte,1)){
+                    std::cout << byte << std::endl;
                     if (max < maxbit){
                         //gravar no ficheiro de texto
                         vector<int> bitsConvertidos=byteToBit(byte);
-                        for(int i=0;i<bitsConvertidos.size();i++){
+                        for(unsigned long int i=0;i<bitsConvertidos.size();i++){
                             if(max < maxbit){
                                 max++;
-                                bitArray.push_back(bitsConvertidos[i]-'0');
+                                bitArray.push_back(bitsConvertidos[i]);
                             }else{
                                 break;
                             }
@@ -139,7 +139,7 @@ class BitStream{
             file.close();
         }
 
-        void WriteBinFile(string fileName, int maxbit)
+        void WriteBinFile(string fileName)
         {
 
             //ficheiro de saida
@@ -151,8 +151,10 @@ class BitStream{
             }
             if(fileOut.is_open()) {
                 vector<int> umbyte;
-                for(int i=0;i<bitArray.size();i++)
+                //std::cout << "Bytes: " << bitArray.size() << std::endl;
+                for(unsigned long int i=0;i<bitArray.size();i++)
                 {
+                    //std::cout << "Byte: " << i << "|" << bitArray[i] << std::endl;
                     umbyte.push_back(bitArray[i]);
                     if ((i+1) % 8 ==0){
                         
@@ -164,6 +166,19 @@ class BitStream{
 
                 }
                 fileOut.close();
+            }
+            
+        }
+        //Guarda uma string no bitStream em formato binário
+        void stringtoBit(string txt)
+        {
+        
+            for(unsigned long int i=0;i<txt.size();i++)
+            {
+                char chr=txt[i];
+                vector<int> bitArr=byteToBit(chr);
+                for(unsigned long int k=0;k<bitArr.size();k++)
+                    bitArray.push_back(bitArr[k]);
             }
             
         }
@@ -182,8 +197,6 @@ class BitStream{
             //cout << "size: " << size << "\n";
             return size;
         }
-    //open file
-    //fout.open("sample.txt", ios::app);
 
     // read single bit
         int readBit() {
@@ -221,8 +234,8 @@ class BitStream{
     // write N bits (0 <= N <= 64)
         void writeBits(vector<int> bits) {
             size_t size = bits.size();
-            if (size < 0 || size > 64) {
-                fprintf(stderr,"Given N (%d) must be in range [0-64]",size);
+            if (size > 64) {
+                fprintf(stderr,"Given N (%ld) must be in range [0-64]",size);
                 return;
             }
             for (uint8_t bit : bits)
@@ -244,33 +257,24 @@ class BitStream{
                 lines.push_back(line);
             }
             inputFile.close();
-        }
-    // write string
-        void writeStringFile(string fileName)
-        {
-            std::ofstream outputFile(fileName);
-            if(!outputFile.is_open())
+            std::cout << lines.size() << " Lines read" << std::endl;
+        
+            for(unsigned long int i=0;i<lines.size();i++)
             {
-                std::cerr << "Erro ao criar ficheiro " << fileName << std::endl;
-                return; 
+                stringtoBit(lines[i]);
             }
 
-            for (const string &line : lines)
-            {
-                outputFile << line << std::endl;
-            }
-
-            outputFile.close();
         }
 
 // other classes
+
     
     vector<int> byteToBit(char byte)
     {
         vector<int> bitArr;
         for (int i = 7; i>= 0; i--)
         {
-            bitArr.push_back((byte & (1 << i))? '1' : '0');
+            bitArr.push_back((byte & (1 << i))? 1 : 0);
         } 
 
         return bitArr;
@@ -285,4 +289,5 @@ class BitStream{
          }      
         return byte;
     }
+
 };

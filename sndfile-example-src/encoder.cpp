@@ -38,15 +38,18 @@ main (int argc, char *argv[])
     {
         bts.ReadTxtFile(fileName, maxbit);
         bts.showBits();
-        bts.WriteBinFile(fileNameOut, maxbit);
+        bts.WriteBinFile(fileNameOut);
     }else if(fileMode=="d"){
         bts.ReadBinFile(fileName, maxbit);
-        bts.ReadBinFile(fileName, maxbit);
         bts.showBits();
-        bts.WriteTxTFile(fileNameOut, maxbit);
+        bts.WriteTxTFile(fileNameOut);
     }else if(fileMode=="wr"){
         bts.readStringFile(fileName);
-        bts.writeStringFile(fileNameOut);
+        //bts.showBits();
+        bts.WriteBinFile(fileNameOut);
+    }else if(fileMode=="wd"){
+        bts.ReadBinFile(fileName,maxbit);
+        bts.WriteBinFile(fileNameOut);
     }
 
 }
