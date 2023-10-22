@@ -31,3 +31,9 @@ target_link_libraries (wav_cmp sndfile)
 
 add_executable (encoder encoder.cpp)
 target_link_libraries (encoder)
+
+add_executable (lossy_codec lossy_codec.cpp)
+target_link_libraries (lossy_codec sndfile fftw3)
+
+add_executable (sound_decoder sound_decoder.cpp)
+target_link_libraries (sound_decoder sndfile fftw3)
