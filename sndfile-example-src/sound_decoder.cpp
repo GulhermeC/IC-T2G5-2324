@@ -9,10 +9,6 @@
 
 using namespace std;
 
-constexpr size_t BLOCK_SIZE = 16; // Buffer for reading frames
-constexpr size_t SAMPLE_BITS =15; 
-constexpr size_t DELTA = 200; 
-
 int binToInt(vector<int> bits){
 	int sum = 0;
 	if(bits[0]==1) sum = -pow(2,bits.size()-1);
@@ -34,6 +30,9 @@ int main(int argc, char *argv[]) {
 	BitStream bts(inputFile,"r");
 
 	int sampleRate = binToInt(bts.readBits(17));
+	int blockSize = binToInt(bts.readBits(16));
+	int delta = binToInt(bts.readBits(16));
+	int sampleBits = binToInt(bts.readBits(16));
 
     //Check input file
 	SndfileHandle sndFileOut { outputFile, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, 1, sampleRate };
@@ -43,32 +42,30 @@ int main(int argc, char *argv[]) {
     }
 
 
-	int numberBlocks = (bts.fileSize()*8)/(BLOCK_SIZE*SAMPLE_BITS);
+	int numberBlocks = (bts.fileSize()*8)/(blockSize*sampleBits);
 
-	vector<double> samplestemp(BLOCK_SIZE);
-	vector<double> samples;
-	vector<int> dctCoefficients(BLOCK_SIZE);
+	vector<short> samples(numberBlocks*blockSize);
 
-	for(int i=0; i<numberBlocks;i++){
-		dctCoefficients.clear();
-        for (int j = 0; j < BLOCK_SIZE; j++) {
-			vector<int> quantCoesBin(bts.readBits(SAMPLE_BITS));
-			dctCoefficients.push_back(binToInt(quantCoesBin)*DELTA);
-        }
+	// Vector for holding all DCT coefficients, channel by channel
+	vector<vector<double>> x_dct(1, vector<double>(numberBlocks * blockSize));
 
-		vector<double> dctCoefficientsDouble(dctCoefficients.begin(),dctCoefficients.end());
+	// Vector for holding DCT computations
+	vector<double> x(blockSize);
 
-		int N = BLOCK_SIZE;
-		fftw_plan plan_idct = fftw_plan_r2r_1d(N, dctCoefficientsDouble.data(), samplestemp.data(), FFTW_REDFT01, FFTW_ESTIMATE);
-        fftw_execute(plan_idct);
+	for(size_t n = 0 ; n < numberBlocks ; n++){
+		for(size_t k = 0 ; k < blockSize ; k++)
+			x_dct[0][n * blockSize + k] = (binToInt(bts.readBits(sampleBits))*delta);
+	}
+	
+	fftw_plan plan_i = fftw_plan_r2r_1d(blockSize, x.data(), x.data(), FFTW_REDFT01, FFTW_ESTIMATE);
+	for(size_t n = 0 ; n < numberBlocks ; n++){
+		for(size_t k = 0 ; k < blockSize ; k++)
+			x[k] = x_dct[0][n * blockSize + k];
 
-		for(int l=0;l<BLOCK_SIZE;l++){
-			samples.push_back(samplestemp[l]/32);
-		}
-
+		fftw_execute(plan_i);
+		for(size_t k = 0 ; k < blockSize ; k++)
+			samples[(n * blockSize + k)] = static_cast<short>(round(x[k]));
 	}
 
-	vector<short> samplesShort(samples.begin(),samples.end());
-
-	sndFileOut.writef(samplesShort.data(),samplesShort.size());
+	sndFileOut.writef(samples.data(),samples.size());
 }

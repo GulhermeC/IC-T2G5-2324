@@ -9,13 +9,11 @@
 
 using namespace std;
 int overflow =0;
-constexpr size_t BLOCK_SIZE =16; // Buffer for reading frames
-constexpr size_t SAMPLE_BITS =15; 
-constexpr size_t DELTA = 200; 
 
 std::vector<int> intToBin(int32_t n, int nbits){
-	if (n < -(1 << (nbits - 1)) || n >= (1 << (nbits - 1))) {
+	if (n < -(pow(2,nbits-1))|| n >= (pow(2,nbits-1))) {
         overflow++;
+		cout << n << "\n";
     }
 
 	std::vector<int> binaryVector(nbits,0);
@@ -36,14 +34,35 @@ std::vector<int> intToBin(int32_t n, int nbits){
 int main(int argc, char *argv[]) {
 
 	if(argc < 3) {
-		cerr << "Usage: " << argv[0] << " <input file> <output file>\n";
+		cerr << "Usage: " << argv[0] << " <input file> <output file> [-s BlockSize (16)] [-d delta (200)] [-b bits per sample (14)]\n";
 		return 1;
 	}
 
-    string outputFile = argv[argc-1];
+    string outputFile = argv[2];
+	int BlockSize = 16;
+	int delta = 200;
+	int sampleBits = 14;
+
+	for(int n = 1 ; n < argc ; n++)
+		if(string(argv[n]) == "-s") {
+			BlockSize = stoi(argv[n+1]);
+			break;
+		}
+	
+	for(int n = 1 ; n < argc ; n++)
+		if(string(argv[n]) == "-d") {
+			delta = stoi(argv[n+1]);
+			break;
+		}
+
+	for(int n = 1 ; n < argc ; n++)
+		if(string(argv[n]) == "-b") {
+			sampleBits = stoi(argv[n+1]);
+			break;
+		}
 
     //Check input file
-	SndfileHandle sndFile { argv[argc-2] };
+	SndfileHandle sndFile { argv[1] };
 	if(sndFile.error()) {
 		cerr << "Error: invalid input file\n";
 		return 1;
@@ -60,36 +79,57 @@ int main(int argc, char *argv[]) {
 		cerr << "Error: file is not in PCM_16 format\n";
 		return 1;
 	}
-
+	int Mono = 1;
 	if((sndFile.channels())>1) {
-		cerr << "Error: file is not mono\n";
-		return 1;
+		Mono = 0;
 	}
+	size_t nChannels { static_cast<size_t>(sndFile.channels()) };
+	size_t nFrames { static_cast<size_t>(sndFile.frames()) };
 
+	vector<short> samples(nChannels * nFrames);
+	sndFile.readf(samples.data(), nFrames);
 
-	size_t nFrames;
-	vector<short> samples(BLOCK_SIZE);
-	vector<double> dctCoefficients(BLOCK_SIZE);
-	BitStream bts(outputFile,"w");
-	int lol = 0;
-	bts.writeBits(intToBin(sndFile.samplerate(),17));
+	size_t nBlocks { static_cast<size_t>(ceil(static_cast<double>(nFrames) / BlockSize)) };
 
-	while((nFrames = sndFile.readf(samples.data(), BLOCK_SIZE))){
-		lol++;
-		samples.resize(nFrames);
-		if(samples.size() < BLOCK_SIZE) samples.resize(BLOCK_SIZE,0);
-		vector<double> samplesDouble(samples.begin(),samples.end());
+	// Do zero padding, if necessary
+	samples.resize(nBlocks * BlockSize * nChannels);
 
-		int N = samples.size();
-		fftw_plan plan_dct = fftw_plan_r2r_1d(N, samplesDouble.data(), dctCoefficients.data(), FFTW_REDFT10, FFTW_ESTIMATE);
-        fftw_execute(plan_dct);
-
-		for (int i = 0; i < dctCoefficients.size(); i++){
-			int quantizedCoe = round(dctCoefficients[i]/DELTA);
-			bts.writeBits(intToBin(quantizedCoe,SAMPLE_BITS));
+	if(Mono==0){
+		for(int i=0;i<nFrames;i++){
+			short mid = ((samples[i*2] + samples[i*2+1]) / 2);
+			samples[i] = mid;
 		}
-
-
+		nChannels = 1;
+		samples.resize(nFrames);
 	}
+	// Vector for holding all DCT coefficients, channel by channel
+	vector<vector<double>> x_dct(nChannels, vector<double>(nBlocks * BlockSize));
+
+	// Vector for holding DCT computations
+	vector<double> x(BlockSize);
+
+	BitStream bts(outputFile,"w");
+	bts.writeBits(intToBin(sndFile.samplerate(),17));
+	bts.writeBits(intToBin(BlockSize,16));
+	bts.writeBits(intToBin(delta,16));
+	bts.writeBits(intToBin(sampleBits,16));
+
+	fftw_plan plan_d = fftw_plan_r2r_1d(BlockSize, x.data(), x.data(), FFTW_REDFT10, FFTW_ESTIMATE);
+	for(size_t n = 0 ; n < nBlocks ; n++){
+		for(size_t k = 0 ; k < BlockSize ; k++)
+			x[k] = samples[(n * BlockSize + k) * nChannels + 0];
+
+		fftw_execute(plan_d);
+		// Keep only "dctFrac" of the "low frequency" coefficients
+		for(size_t k = 0 ; k < BlockSize * 0.2 ; k++)
+			x_dct[0][n * BlockSize + k] = x[k] / (BlockSize << 1);
+	}
+
+	for (int i = 0; i < x_dct[0].size(); i++){
+		int quantizedCoe = round((x_dct[0][i] / delta));
+		bts.writeBits(intToBin(quantizedCoe,sampleBits));
+	}
+	
 	cout << "overflow: " << overflow << "\n";
+	return 0;
 }
