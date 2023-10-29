@@ -89,20 +89,20 @@ int main(int argc, char *argv[]) {
 			double absoluteError = abs(CEsamples[i] - OGsamples[i]);
 
 			if (absoluteError > maxAbsoluteErrors[channelIndex]) {
-                maxAbsoluteErrors[channelIndex] = absoluteError;
-            }
-
-            if (absoluteError > maxAbsoluteError) {
-                maxAbsoluteError = absoluteError;
-            }
-
+		        	maxAbsoluteErrors[channelIndex] = absoluteError;
+			}
+	
+			if (absoluteError > maxAbsoluteError) {
+				maxAbsoluteError = absoluteError;
+			}
+		
 			//SNR
 			powerSignal[channelIndex] += pow(OGsamples[i], 2);
 			powerNoise[channelIndex] += pow(CEsamples[i] - OGsamples[i], 2);
-
+	
 			overallSignalpower += pow(OGsamples[i], 2);
 			overallNoisepower += pow(CEsamples[i] - OGsamples[i], 2);
-
+	
 		}
 	}	
 	
