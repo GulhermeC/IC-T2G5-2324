@@ -37,15 +37,12 @@ main (int argc, char *argv[])
     if (fileMode=="e")
     {
         bts.ReadTxtFile(fileName, maxbit);
-        bts.showBits();
         bts.WriteBinFile(fileNameOut);
     }else if(fileMode=="d"){
         bts.ReadBinFile(fileName, maxbit);
-        bts.showBits();
         bts.WriteTxTFile(fileNameOut);
     }else if(fileMode=="wr"){
         bts.readStringFile(fileName);
-        //bts.showBits();
         bts.WriteBinFile(fileNameOut);
     }else if(fileMode=="wd"){
         bts.ReadBinFile(fileName,maxbit);
@@ -53,92 +50,3 @@ main (int argc, char *argv[])
     }
 
 }
-//TODO CLEAN
-/*
-    if(fileMode=="encode")
-    {
-        //fazer o enconde: txt -> bin
-        std::ifstream file(fileName);
-        std::string line;
-        std::vector<int> bits;
-        //ficheiro de saida
-        std::ofstream fileOut(fileNameOut,std::ios::binary);
-        if (!fileOut.is_open())
-        {
-            std::cerr << "Erro ao criar ficheiro binário" << std::endl;
-            return -1;
-        }
-        if(file.is_open()) {
-            while (getline(file, line)){
-                std::cout << line << std::endl;
-                for(int i=0;i<line.size();i++)
-                {
-                    bits.push_back(line[i]-'0');
-                    //std::cout << bits[i] << std::endl;
-                }
-                char convertido= bitToByte(bits);
-                //gravar o byte convertido
-                fileOut.write(&convertido,1);
-                std::cout << std::hex << (unsigned int)convertido << std::endl;
-                bits.clear();
-            }
-            file.close();
-            fileOut.close();
-        }
-    }else if(fileMode=="decode")//binário para txt
-    {
-        std::ifstream file(fileName,std::ios::binary);
-        std::string line;
-        std::vector<int> bits;
-        //ficheiro de saida
-        std::ofstream fileOut(fileNameOut);
-        if (!fileOut.is_open())
-        {
-            std::cerr << "Erro ao criar ficheiro texto" << std::endl;
-            return -1;
-        }
-        char byte;
-        if(file.is_open()) 
-        {
-            while(file.read(&byte,1)){
-                //gravar no ficheiro de texto
-                vector<int> bitsConvertidos=byteToBit(byte);
-                for(int i=0;i<bitsConvertidos.size();i++)
-                    fileOut << bitsConvertidos[i]-'0';
-                fileOut << std::endl;
-                
-            }
-        }
-        file.close();
-        fileOut.close();
-    }
-
-    //BitStream(fileName, fileMode);
-}
-vector<int> byteToBit(char byte)
-    {
-        vector<int> bitArr;
-        for (int i = 7; i>= 0; i--)
-        {
-            bitArr.push_back((byte & (1 << i))? '1' : '0');
-        } 
-
-        return bitArr;
-
-        
-    }
-
-            // Convert bit array to byte
-    char bitToByte(vector<int> bitArr)
-    {
-        char byte = 0;
-
-        for (int i = 0; i < 8; ++i) {
-            if (bitArr[i] != 0 && bitArr[i] != 1) {
-                throw std::invalid_argument("Os elementos do vetor devem ser 0 ou 1.");
-            }
-            byte |= (bitArr[i] << (7 - i));
-         }      
-        return byte;
-    }
-*/
