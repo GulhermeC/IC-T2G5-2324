@@ -34,7 +34,7 @@ std::vector<int> intToBin(int32_t n, int nbits){
 int main(int argc, char *argv[]) {
 
 	if(argc < 3) {
-		cerr << "Usage: " << argv[0] << " <input file> <output file> [-s BlockSize (16)] [-d delta (200)] [-b bits per sample (14)]\n";
+		cerr << "Usage: " << argv[0] << " <input file> <output file> [-s BlockSize (256)] [-d delta (500)] [-b bits per sample (7)]\n";
 		return 1;
 	}
 
