@@ -13,7 +13,6 @@ class WAVHist {
 	std::vector<std::map<short, size_t>> bins;
 	std::map<short, size_t> average;
 	std::map<short, size_t> difference;
-	int binSize = 64;
 
   public:
 	WAVHist(const SndfileHandle& sfh) {
@@ -36,7 +35,7 @@ class WAVHist {
 		}
 	}
 
-	void updateBins() {
+	void updateBins(int binSize) {
 		for (uint i = 0; i < counts.size(); i++) {
 
 			int sum = 0;		// used to calculate average of values inside the considered bin
