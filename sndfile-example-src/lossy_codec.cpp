@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
 	}
 
     string outputFile = argv[2];
-	int BlockSize = 16;
-	int delta = 200;
-	int sampleBits = 14;
+	int BlockSize = 256;
+	int delta = 500;
+	int sampleBits = 7;
 
 	for(int n = 1 ; n < argc ; n++)
 		if(string(argv[n]) == "-s") {
@@ -120,8 +120,7 @@ int main(int argc, char *argv[]) {
 			x[k] = samples[(n * BlockSize + k) * nChannels + 0];
 
 		fftw_execute(plan_d);
-		// Keep only "dctFrac" of the "low frequency" coefficients
-		for(size_t k = 0 ; k < BlockSize * 0.2 ; k++)
+		for(size_t k = 0 ; k < BlockSize ; k++)
 			x_dct[0][n * BlockSize + k] = x[k] / (BlockSize << 1);
 	}
 
