@@ -17,7 +17,7 @@ main (int argc, char *argv[])
 {
     //input 
     if(argc < 4) {
-		cerr << "Usage: " << argv[0] << " <input file> <output file> <e|d|wr> [maxbit]\n";
+		cerr << "Usage: " << argv[0] << " <input file> <output file> <e|d|wr|wd> [maxbit]\n";
 		return 1;
 	}
 
