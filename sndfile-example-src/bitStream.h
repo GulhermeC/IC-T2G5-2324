@@ -62,7 +62,6 @@ class BitStream{
             if(file.is_open()) {
                 while (getline(file, line)){
                     if(max < maxbit){
-                       // std::cout << line << std::endl;
                         for(unsigned long int i=0;i<line.size();i++)
                         {
                             if(max < maxbit){
@@ -151,15 +150,12 @@ class BitStream{
             }
             if(fileOut.is_open()) {
                 vector<int> umbyte;
-                //std::cout << "Bytes: " << bitArray.size() << std::endl;
                 for(unsigned long int i=0;i<bitArray.size();i++)
                 {
-                    //std::cout << "Byte: " << i << "|" << bitArray[i] << std::endl;
                     umbyte.push_back(bitArray[i]);
                     if ((i+1) % 8 ==0){
                         
                         char convertido= bitToByte(umbyte);
-                        //std::cout << std::hex << (unsigned int)convertido << std::endl;
                         fileOut.write(&convertido,1);
                         umbyte.clear();
                     }
@@ -193,8 +189,6 @@ class BitStream{
             // Get file size
             copy.seekg(0, copy.end);
             size = copy.tellg();
-
-            //cout << "size: " << size << "\n";
             return size;
         }
 
