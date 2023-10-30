@@ -2,21 +2,52 @@
 #include <vector>
 #include <sndfile.hh>
 #include "wav_hist.h"
+#include <unistd.h>
 
 using namespace std;
 
+const char* USAGE = \
+	"Usage: %s <input file> <channel> [OPTIONS]\n" \
+	"OPTIONS:\n" \
+	"	-s    --- bin size (default 4)\n";
+
 constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
+int binSize = 4;
 
 int main(int argc, char *argv[]) {
+
+	if(argc < 3) {
+		fprintf(stderr,USAGE,argv[0]);
+		return 1;
+	}
+
+	int opt;
+	while ((opt = getopt(argc, argv, "s:h")) != -1) {
+
+		switch (opt)
+		{
+			case 's':
+			{
+				int option = atoi(optarg);
+				binSize = option;
+				break;
+			}
+			case 'h':
+			{
+				printf(USAGE,argv[0]);
+				return 1;
+			}
+			default:
+			{
+				return 1;
+			}
+		}
+	}
+	cout << "Bin Size " << binSize << '\n';
 
 	cerr << "Channel " << argc << '\n';
 	cerr << "Sample1 " << argv << '\n';
 	cerr << "Sample " << *argv << '\n';
-
-	if(argc < 3) {
-		cerr << "Usage: " << argv[0] << " <input file> <channel>\n";
-		return 1;
-	}
 
 	//Check input file
 	SndfileHandle sndFile { argv[argc-2] };
@@ -53,7 +84,7 @@ int main(int argc, char *argv[]) {
 		samples.resize(nFrames * sndFile.channels());
 		hist.update(samples);
 	}
-	hist.updateBins();
+	hist.updateBins(binSize);
 	hist.dumpMid();
 	hist.dumpSide();
 	hist.dump(channel);
