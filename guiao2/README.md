@@ -1,10 +1,10 @@
-#Compilation
+# Compilation
 
 To compile the program, simply run:
 
 ``` make ```
 
-#Usage
+# Usage
 
 To run the program, follow this format:
 
@@ -14,7 +14,7 @@ To run the program, follow this format:
 
 <color_channel>: Specify which color channel you want to extract and display. Options are R for Red, G for Green, B for Blue, and ALL to display all channels.
 
-#Examples:
+# Examples:
 
 Red Channel:
 
