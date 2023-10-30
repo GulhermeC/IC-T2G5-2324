@@ -1,0 +1,3 @@
+/home/gjscraveiro/Desktop/Uni/IC/IC-T2G5-2324/guiao2/CMakeFiles/rebuild_cache.dir
+/home/gjscraveiro/Desktop/Uni/IC/IC-T2G5-2324/guiao2/CMakeFiles/edit_cache.dir
+/home/gjscraveiro/Desktop/Uni/IC/IC-T2G5-2324/guiao2/CMakeFiles/extract.dir
